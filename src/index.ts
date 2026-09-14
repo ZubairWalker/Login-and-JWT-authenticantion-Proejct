@@ -1,25 +1,29 @@
 import express from 'express';
-import { type Request,type Response } from 'express';
-import dotenv from 'dotenv';
+import connectDB from './config/database.js';
+import { env } from './config/env.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { adminRouter } from './routes/admin.routes.js';
+import { authRouter } from './routes/auth.routes.js';
+import { userRouter } from './routes/user.routes.js';
 
-dotenv.config();
+const app = express();
+app.use(express.json({ limit: '10kb' }));
 
-const app = express()
+app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/', (_req, res) => res.json({ message: 'Welcome to Login and JWT Authentication' }));
+app.use('/api/auth', authRouter);
+app.use('/api', userRouter);
+app.use('/api/admin', adminRouter);
+app.use(errorHandler);
 
-// using JSON middleware
-app.use(express.json())
+async function startServer(): Promise<void> {
+  await connectDB();
+  app.listen(env.port, () => console.log(`Server is running on port ${env.port}`));
+}
 
-// important Health Check
-app.get('/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok' })
-})
+startServer().catch((error: unknown) => {
+  console.error('Failed to start server', error);
+  process.exitCode = 1;
+});
 
-app.get('/', (req: Request, res: Response) => {
-    res.json({ message: 'Hello World' })
-})
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log(`server is running smoothly on port ${PORT}`)
-})
+export { app };
