@@ -1,7 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import { login, logout, refresh } from '../services/auth.service.js';
+import { login, logout, refresh, register } from '../services/auth.service.js';
 import { toAuthUser } from '../utils/users.js';
-import { loginBody, refreshBody } from '../utils/validation.js';
+import { loginBody, refreshBody, registerBody } from '../utils/validation.js';
+
+export async function registerController(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { user, tokens } = await register(registerBody(req.body));
+    res.status(201).json({ ...tokens, user: toAuthUser(user) });
+  } catch (error) { next(error); }
+}
 
 export async function loginController(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
