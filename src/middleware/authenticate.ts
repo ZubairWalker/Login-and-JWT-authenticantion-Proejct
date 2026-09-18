@@ -9,9 +9,9 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     if (!authorization?.startsWith('Bearer ')) throw new AppError(401, 'Authentication required');
     const token = authorization.slice('Bearer '.length).trim();
     const payload = verifyToken(token, 'access');
-    const user = await User.findById(payload.sub).select('roles');
+    const user = await User.findById(payload.sub).select('roles isVerified');
     if (!user) throw new AppError(401, 'Authentication required');
-    req.user = { id: user.id, roles: user.roles };
+    req.user = { id: user.id, roles: user.roles, isVerified: user.isVerified };
     next();
   } catch (error) {
     next(error instanceof AppError ? error : new AppError(401, 'Authentication required'));

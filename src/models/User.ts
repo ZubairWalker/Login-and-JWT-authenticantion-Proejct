@@ -7,6 +7,10 @@ export interface IUser {
   username: string;
   passwordHash: string;
   roles: Role[];
+  isVerified: boolean;
+  verificationTokenHash?: string;
+  verificationTokenExpiry?: Date;
+  lastVerificationSentAt?: Date;
   profile: { firstName: string; lastName: string; bio?: string };
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +32,10 @@ const userSchema = new mongoose.Schema<IUser>(
     username: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true, select: false },
     roles: { type: [String], enum: ['user', 'admin'], default: ['user'] },
+    isVerified: { type: Boolean, default: false },
+    verificationTokenHash: { type: String, select: false },
+    verificationTokenExpiry: Date,
+    lastVerificationSentAt: Date,
     profile: {
       firstName: { type: String, required: true, trim: true },
       lastName: { type: String, required: true, trim: true },
