@@ -9,11 +9,12 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     if (!authorization?.startsWith('Bearer ')) throw new AppError(401, 'Authentication required');
     const token = authorization.slice('Bearer '.length).trim();
     const payload = verifyToken(token, 'access');
-    const user = await User.findById(payload.sub).select('roles isVerified');
-    if (!user) throw new AppError(401, 'Authentication required');
+    const user = await User.findById(payload.sub).select('roles isVerified isActive');
+    if (!user) throw new AppError(401, 'Authentication required', 'AUTHENTICATION_REQUIRED');
+    if (!user.isActive) throw new AppError(403, 'User account is deactivated', 'ACCOUNT_DEACTIVATED');
     req.user = { id: user.id, roles: user.roles, isVerified: user.isVerified };
     next();
   } catch (error) {
-    next(error instanceof AppError ? error : new AppError(401, 'Authentication required'));
+    next(error instanceof AppError ? error : new AppError(401, 'Authentication required', 'AUTHENTICATION_REQUIRED'));
   }
 }

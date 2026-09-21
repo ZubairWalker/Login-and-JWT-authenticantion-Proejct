@@ -3,6 +3,7 @@ import { AppError } from '../errors/AppError.js';
 import type { TodoDocument } from '../models/Todo.js';
 import { Todo } from '../models/Todo.js';
 import { todoCreateBody, todoUpdateBody } from '../utils/validation.js';
+import { getPagination, paginationResult } from '../utils/pagination.js';
 
 function toTodo(todo: TodoDocument) {
   return {
@@ -20,19 +21,23 @@ export async function createTodo(req: Request, res: Response, next: NextFunction
   try {
     const input = todoCreateBody(req.body);
     const todo = await Todo.create({ ...input, owner: req.user!.id });
-    res.status(201).json({ todo: toTodo(todo) });
+    res.status(201).json({ success: true, todo: toTodo(todo) });
   } catch (error) { next(error); }
 }
 
 export async function listMyTodos(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const todos = await Todo.find({ owner: req.user!.id }).sort({ createdAt: -1 });
-    res.status(200).json({ todos: todos.map((todo) => toTodo(todo as TodoDocument)) });
+    const { page, limit, skip } = getPagination(req.query);
+    const [todos, total] = await Promise.all([
+      Todo.find({ owner: req.user!.id }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Todo.countDocuments({ owner: req.user!.id }),
+    ]);
+    res.status(200).json({ success: true, todos: todos.map((todo) => toTodo(todo as TodoDocument)), pagination: paginationResult(page, limit, total) });
   } catch (error) { next(error); }
 }
 
 export function getTodo(req: Request, res: Response): void {
-  res.status(200).json({ todo: toTodo(req.todo!) });
+  res.status(200).json({ success: true, todo: toTodo(req.todo!) });
 }
 
 export async function updateTodo(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -41,7 +46,7 @@ export async function updateTodo(req: Request, res: Response, next: NextFunction
     const todo = req.todo!;
     Object.assign(todo, update);
     await todo.save();
-    res.status(200).json({ todo: toTodo(todo) });
+    res.status(200).json({ success: true, todo: toTodo(todo) });
   } catch (error) { next(error); }
 }
 
@@ -57,6 +62,6 @@ export async function listUserTodos(req: Request, res: Response, next: NextFunct
     const userId = req.params.id;
     if (!userId) throw new AppError(400, 'Invalid user id');
     const todos = await Todo.find({ owner: userId }).sort({ createdAt: -1 });
-    res.status(200).json({ todos: todos.map((todo) => toTodo(todo as TodoDocument)) });
+    res.status(200).json({ success: true, todos: todos.map((todo) => toTodo(todo as TodoDocument)) });
   } catch (error) { next(error); }
 }

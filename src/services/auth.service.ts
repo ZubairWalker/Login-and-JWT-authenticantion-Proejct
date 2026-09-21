@@ -41,8 +41,8 @@ export async function register(input: RegistrationInput): Promise<UserDocument> 
 
 export async function login(emailOrUsername: string, password: string): Promise<{ user: UserDocument; tokens: TokenPair }> {
   const user = await User.findOne({ $or: [{ email: emailOrUsername }, { username: emailOrUsername }] }).select('+passwordHash');
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) throw new AppError(401, 'Invalid credentials');
-  if (!user.isVerified) throw new AppError(403, 'Email verification is required');
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
+  if (!user.isActive) throw new AppError(403, 'User account is deactivated', 'ACCOUNT_DEACTIVATED');
   return { user, tokens: await issueTokenPair(user) };
 }
 
@@ -80,7 +80,7 @@ export async function refresh(refreshToken: string): Promise<TokenPair> {
   );
   if (!token) throw new AppError(401, 'Invalid refresh token');
   const user = await User.findById(payload.sub);
-  if (!user || !user.isVerified) throw new AppError(401, 'Invalid refresh token');
+  if (!user || !user.isActive) throw new AppError(401, 'Invalid refresh token');
   return issueTokenPair(user);
 }
 

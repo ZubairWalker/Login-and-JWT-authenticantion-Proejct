@@ -8,7 +8,7 @@ export async function getMe(req: Request, res: Response, next: NextFunction): Pr
   try {
     const user = await User.findById(req.user?.id);
     if (!user) throw new AppError(404, 'User not found');
-    res.status(200).json({ user: toPublicUser(user) });
+    res.status(200).json({ success: true, user: toPublicUser(user) });
   } catch (error) { next(error); }
 }
 
@@ -16,7 +16,7 @@ export async function getPublicProfile(req: Request, res: Response, next: NextFu
   try {
     const user = await User.findById(req.params.id);
     if (!user) throw new AppError(404, 'User not found');
-    res.status(200).json({ user: toPublicProfile(user) });
+    res.status(200).json({ success: true, user: toPublicProfile(user) });
   } catch (error) { next(error); }
 }
 
@@ -25,6 +25,6 @@ export async function updateMe(req: Request, res: Response, next: NextFunction):
     const update = profileUpdateBody(req.body);
     const user = await User.findByIdAndUpdate(req.user?.id, { $set: update }, { new: true, runValidators: true });
     if (!user) throw new AppError(404, 'User not found');
-    res.status(200).json({ user: toPublicUser(user) });
+    res.status(200).json({ success: true, user: toPublicUser(user) });
   } catch (error) { next(error); }
 }

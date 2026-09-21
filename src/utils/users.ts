@@ -11,6 +11,7 @@ export function toPublicUser(user: UserDocument) {
     email: user.email,
     username: user.username,
     roles: user.roles,
+    isActive: user.isActive,
     profile,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,

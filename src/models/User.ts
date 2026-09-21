@@ -8,6 +8,7 @@ export interface IUser {
   passwordHash: string;
   roles: Role[];
   isVerified: boolean;
+  isActive: boolean;
   verificationTokenHash?: string;
   verificationTokenExpiry?: Date;
   lastVerificationSentAt?: Date;
@@ -33,6 +34,7 @@ const userSchema = new mongoose.Schema<IUser>(
     passwordHash: { type: String, required: true, select: false },
     roles: { type: [String], enum: ['user', 'admin'], default: ['user'] },
     isVerified: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     verificationTokenHash: { type: String, select: false },
     verificationTokenExpiry: Date,
     lastVerificationSentAt: Date,

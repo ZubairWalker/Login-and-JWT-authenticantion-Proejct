@@ -44,7 +44,7 @@ That admin can then update other users' roles through the admin endpoint.
 | POST | `/api/auth/register` | Create an unverified account and print a verification link |
 | GET | `/api/auth/verify-email?token=...` | Verify an account |
 | POST | `/api/auth/resend-verification` | Resend a verification link for an email |
-| POST | `/api/auth/login` | Get access and refresh tokens after verification |
+| POST | `/api/auth/login` | Get access and refresh tokens |
 | POST | `/api/auth/refresh` | Rotate a refresh token |
 | POST | `/api/auth/logout` | Revoke a refresh token |
 
@@ -74,7 +74,7 @@ All Todo routes require `Authorization: Bearer ACCESS_TOKEN` and a verified emai
 | Method | Endpoint | Access |
 | --- | --- | --- |
 | POST | `/api/todos` | Create own Todo |
-| GET | `/api/todos` | List own Todos |
+| GET | `/api/todos` | List own Todos (`?page=1&limit=10`) |
 | GET | `/api/todos/:id` | Owner, or admin |
 | PATCH | `/api/todos/:id` | Owner, or admin |
 | DELETE | `/api/todos/:id` | Owner, or admin |
@@ -86,7 +86,8 @@ Every endpoint below requires an authenticated, verified `admin` role.
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | GET | `/api/admin/stats` | User and Todo statistics |
-| GET | `/api/admin/users` | List users |
+| GET | `/api/admin/users` | List users (`?page=1&limit=10`) |
 | GET | `/api/admin/users/:id` | Get any user |
 | PATCH | `/api/admin/users/:id` | Update a user's profile and/or roles |
+| PATCH | `/api/admin/users/:id/status` | Activate or deactivate a user with `{ "isActive": false }` |
 | GET | `/api/admin/users/:id/todos` | View any user's Todos |

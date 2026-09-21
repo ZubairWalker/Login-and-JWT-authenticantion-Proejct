@@ -7,7 +7,7 @@ import { emailBody, loginBody, refreshBody, registerBody } from '../utils/valida
 export async function registerController(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await register(registerBody(req.body));
-    res.status(201).json({ message: 'Registration successful. Check your email to verify your account.', user: toPublicUser(user) });
+    res.status(201).json({ success: true, message: 'Registration successful. Check your email to verify your account.', user: toPublicUser(user) });
   } catch (error) { next(error); }
 }
 
@@ -16,14 +16,14 @@ export async function verifyEmailController(req: Request, res: Response, next: N
     const token = typeof req.query.token === 'string' ? req.query.token : '';
     if (!token) throw new AppError(400, 'Verification token is required');
     const user = await verifyEmail(token);
-    res.status(200).json({ message: 'Email verified successfully', user: toAuthUser(user) });
+    res.status(200).json({ success: true, message: 'Email verified successfully', user: toAuthUser(user) });
   } catch (error) { next(error); }
 }
 
 export async function resendVerificationController(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await resendVerificationEmail(emailBody(req.body));
-    res.status(200).json({ message: 'If an account exists, a verification email has been sent.' });
+    res.status(200).json({ success: true, message: 'If an account exists, a verification email has been sent.' });
   } catch (error) { next(error); }
 }
 
@@ -31,14 +31,14 @@ export async function loginController(req: Request, res: Response, next: NextFun
   try {
     const { emailOrUsername, password } = loginBody(req.body);
     const { user, tokens } = await login(emailOrUsername, password);
-    res.status(200).json({ ...tokens, user: toAuthUser(user) });
+    res.status(200).json({ success: true, ...tokens, user: toAuthUser(user) });
   } catch (error) { next(error); }
 }
 
 export async function refreshController(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { refreshToken } = refreshBody(req.body);
-    res.status(200).json(await refresh(refreshToken));
+    res.status(200).json({ success: true, ...await refresh(refreshToken) });
   } catch (error) { next(error); }
 }
 

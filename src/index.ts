@@ -1,4 +1,7 @@
 import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import connectDB from './config/database.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -8,10 +11,13 @@ import { userRouter } from './routes/user.routes.js';
 import { todoRouter } from './routes/todo.routes.js';
 
 const app = express();
+app.use(helmet());
+app.use(cors());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }));
 app.use(express.json({ limit: '10kb' }));
 
-app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
-app.get('/', (_req, res) => res.json({ message: 'Welcome to Login and JWT Authentication' }));
+app.get('/health', (_req, res) => res.status(200).json({ success: true, status: 'ok' }));
+app.get('/', (_req, res) => res.json({ success: true, message: 'Welcome to Login and JWT Authentication' }));
 app.use('/api/auth', authRouter);
 app.use('/api', userRouter);
 app.use('/api/todos', todoRouter);
