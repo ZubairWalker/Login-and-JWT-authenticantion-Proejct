@@ -6,7 +6,9 @@ import { authorize } from '../middleware/authorize.js';
 import { requireVerified } from '../middleware/requireVerified.js';
 
 export const adminRouter = Router();
+
 adminRouter.use(authenticate, requireVerified, authorize('admin'));
+
 adminRouter.get('/stats', getStatistics);
 adminRouter.get('/users', listUsers);
 adminRouter.get('/users/:id', getUser);

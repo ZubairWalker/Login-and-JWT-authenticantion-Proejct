@@ -22,7 +22,9 @@ export async function createTodo(req: Request, res: Response, next: NextFunction
     const input = todoCreateBody(req.body);
     const todo = await Todo.create({ ...input, owner: req.user!.id });
     res.status(201).json({ success: true, todo: toTodo(todo) });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function listMyTodos(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,8 +34,16 @@ export async function listMyTodos(req: Request, res: Response, next: NextFunctio
       Todo.find({ owner: req.user!.id }).sort({ createdAt: -1 }).skip(skip).limit(limit),
       Todo.countDocuments({ owner: req.user!.id }),
     ]);
-    res.status(200).json({ success: true, todos: todos.map((todo) => toTodo(todo as TodoDocument)), pagination: paginationResult(page, limit, total) });
-  } catch (error) { next(error); }
+    const pagination = paginationResult(page, limit, total);
+    res.status(200).json({
+      success: true,
+      todos: todos.map((todo) => toTodo(todo as TodoDocument)),
+      pagination,
+      ...pagination,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 export function getTodo(req: Request, res: Response): void {
@@ -47,21 +57,48 @@ export async function updateTodo(req: Request, res: Response, next: NextFunction
     Object.assign(todo, update);
     await todo.save();
     res.status(200).json({ success: true, todo: toTodo(todo) });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function deleteTodo(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await req.todo!.deleteOne();
     res.status(204).send();
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function listUserTodos(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.params.id;
-    if (!userId) throw new AppError(400, 'Invalid user id');
+    if (!userId) throw new AppError(400, 'Invalid user id', 'INVALID_RESOURCE_ID');
+
+    const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+    if (hasPagination) {
+      const { page, limit, skip } = getPagination(req.query);
+      const [todos, total] = await Promise.all([
+        Todo.find({ owner: userId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        Todo.countDocuments({ owner: userId }),
+      ]);
+      const pagination = paginationResult(page, limit, total);
+      res.status(200).json({
+        success: true,
+        todos: todos.map((todo) => toTodo(todo as TodoDocument)),
+        pagination,
+        ...pagination,
+      });
+      return;
+    }
+
     const todos = await Todo.find({ owner: userId }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, todos: todos.map((todo) => toTodo(todo as TodoDocument)) });
-  } catch (error) { next(error); }
+    res.status(200).json({
+      success: true,
+      todos: todos.map((todo) => toTodo(todo as TodoDocument)),
+    });
+  } catch (error) {
+    next(error);
+  }
 }

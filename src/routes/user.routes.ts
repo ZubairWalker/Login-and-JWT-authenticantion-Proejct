@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/authenticate.js';
 import { requireVerified } from '../middleware/requireVerified.js';
 
 export const userRouter = Router();
+
 userRouter.get('/users/:id', getPublicProfile);
-userRouter.use(authenticate, requireVerified);
-userRouter.get('/me', getMe);
-userRouter.patch('/me', updateMe);
+userRouter.get('/me', authenticate, getMe);
+userRouter.patch('/me', authenticate, requireVerified, updateMe);

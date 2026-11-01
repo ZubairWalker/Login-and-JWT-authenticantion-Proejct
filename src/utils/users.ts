@@ -11,6 +11,7 @@ export function toPublicUser(user: UserDocument) {
     email: user.email,
     username: user.username,
     roles: user.roles,
+    isVerified: user.isVerified,
     isActive: user.isActive,
     profile,
     createdAt: user.createdAt,
@@ -19,9 +20,20 @@ export function toPublicUser(user: UserDocument) {
 }
 
 export function toAuthUser(user: UserDocument) {
-  return { id: user.id, email: user.email, username: user.username, roles: user.roles, isVerified: user.isVerified };
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    roles: user.roles,
+    isVerified: user.isVerified,
+    isActive: user.isActive,
+  };
 }
 
 export function toPublicProfile(user: UserDocument) {
-  return { id: user.id, username: user.username, profile: user.profile };
+  return {
+    id: user.id,
+    username: user.username,
+    profile: user.profile,
+  };
 }
